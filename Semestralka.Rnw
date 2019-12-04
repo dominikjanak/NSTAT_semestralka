@@ -1,0 +1,194 @@
+\documentclass[a4paper, 11pt]{book}
+\usepackage{hyperref}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+<<echo=false , results=hide>>=
+library('readxl');
+library('e1071');
+@
+
+%==========================================================================================
+% TITLE PAGE
+%==========================================================================================
+  \begin{titlepage}
+    \raggedleft
+  	\rule{1pt}{\textheight}
+  	\hspace{0.05\textwidth}
+  	\parbox[b]{0.75\textwidth}{ 
+  		{\Huge\bfseries Seminární práce \\[0.5\baselineskip]z předmětu NSTAT}\\[2\baselineskip]
+  		{\large\textit{Analýza průměrné spotřebitelské ceny\\hovězího masa (zadního bez kosti)}}\\[4\baselineskip]
+  		{\Large\textsc{Dominik Janák}}
+  		
+  		\vspace{0.5\textheight}
+  		
+  		{\noindent Generováno prostřednictvím sazbovacího systému \LaTeX }
+  	}
+  \end{titlepage}
+
+%==========================================================================================
+% Content
+%========================================================================================== 
+
+<<echo=false , results=hide>>=
+data <- readxl::read_excel("data.xls", col_names = TRUE);
+Praha <- data$Praha;
+Vysocina <- data$Vysocina;
+PardubickyKr <- data$Pardubicky
+@
+
+
+  
+
+\section*{Použitá data}
+Veškerá data použitá pro statistickou analýzu byla stažena ze stránek Českého statistického úřadu.\\[0.5\baselineskip]
+Jedná se o data přůměrných spotřebitelských cen hovězího masa - zadního bez kosti.\\[0.5\baselineskip]
+Data jsou přiožena v excelovém souboru \underline{\href{run:./Ceny_hoveziho_masa.xlsx}{\texttt{Ceny\_hoveziho\_masa.xlsx}}}.\\[1\baselineskip]
+Zdroj dat: \href {https://vdb.czso.cz/vdbvo2/faces/cs/index.jsf}{\texttt{https://vdb.czso.cz/vdbvo2/faces/cs/index.jsf}}
+
+\newpage
+\section*{Zpracování dat}
+Všechny výpočty budoud provedeny pouze na třech demonstračních krajích. Těmito kraji bude konkrétně Praha (pha), Vysočina (vys) a Pardubický kraj (pce).
+
+\newpage
+\section*{Popisná statistika}
+\subsection*{Průměrná hodnota}
+Vypočítáme průměrnou cenu hovězího masa - zadního bez kosti (dále jen ``hovézí maso'') za celé období od 1.1.2006 do 31.12.2017.
+<<>>=
+mean(Praha);
+mean(Vysocina);
+mean(PardubickyKr);
+@
+
+\subsection*{Modus}
+Důležitou hodnotou je též modus, který ukzuje nejčastější hodnotu statistického souboru. Tedy cenu, která se vyskytovala nejčastěji. 
+
+<<Create_modus_function, echo=false , results=hide>>=
+modus <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+@
+
+<<>>=
+modus(Praha);
+modus(Vysocina);
+modus(PardubickyKr);
+@
+
+\begin{quote}
+\emph{Provádění této operace na průměrných týdenních cenách není příliš efektivní.}
+\end{quote}
+
+\subsection*{Medián}
+Hodnota mediánu dělí vzestupně seřazený statistický soubor na dvě stejně početné poloviny. Jedná se tedy o prostřední hodnotu. 
+
+<<>>=
+median(Praha);
+median(Vysocina);
+median(PardubickyKr);
+@
+
+\subsection*{Variance}
+Též rozptyl, je charakteristikou variability, která vyjadřuje variabilitu rozdělení souboru náhodných hodnot kolem její střední hodnoty.
+
+<<>>=
+var(Praha);
+var(Vysocina);
+var(PardubickyKr);
+@
+
+\subsection*{Směrodataná odchylka}
+Jedná se o odmocninu z rozptylu. Vypovídá o tom, nakolik se od sebe navzájem typicky liší jednotlivé případy v souboru zkoumaných hodnot.
+Pokud je malá, jsou si prvky vetšinou navzájem podobné, a naopak velká směrodatná odchylka signalizuje velké vzájemné odlišnosti.
+
+<<>>=
+sd(Praha);
+sd(Vysocina);
+sd(PardubickyKr);
+@
+
+\subsection*{Kvantiliy a percentily}
+Kvantiliy a percentily rozdělují soubor zkoumaných hodnot dané promméné:
+\begin{itemize}
+  \item medián - na dvě části,
+  \item kvantil - na 4 části,
+  \item percentil - na sto částí.
+\end{itemize}
+Díky tomuto rozdělení je možné se rychle rozientovat ve velkém souboru a popsat jeho vnitřní strukturu. Díky nim můžeme zjistit, zda v rámci souboru existují extrémy, nebo zda je soubor víceméně homogení.
+
+<<>>=
+quantile(Praha, probs = c(0, 5, 25, 50, 75, 95, 100)/100);
+quantile(Vysocina, probs = c(0, 5, 25, 50, 75, 95, 100)/100);
+quantile(PardubickyKr, probs = c(0, 5, 25, 50, 75, 95, 100)/100);
+@
+\begin{quote}
+\emph{Letmým pohledem si lze všimnout, že: }
+  \begin{itemize}
+    \item \emph{percentil   0\% - je minimum}
+    \item \emph{percentil  50\% - je median}
+    \item \emph{percentil 100\% - je maximum}
+  \end{itemize}
+\end{quote}
+
+\subsection*{Šikmost a špičatost}
+Mezi další známé popisné charakteristiky můžeme zařadit tzv. míry tvaru, tj. šikmosti a špičatosti. Tyto charakteristiky nám pomáhají určovat, jak moc se rozdělení dat, které jsme získali, podobá nebo se naopak odlišuje od normálního rozdělení, tj. Gaussova.
+
+\subsubsection*{Šikmost}
+Šikmost je charakteristikou, jež nám určuje, kterým směrem je naše proměnná asymetricky rozložena. Rozlišujeme šikmost kladnou (pravostrannou), kdy se většina získaných hodnot nachází pod průměrem a šikmost zápornou (levostrannou), kdy se většina hodnot naopak nachází nad průměrem.\\[0.5\baselineskip]
+Nulová hodnota tohoto koeficientu svědčí o rozložení symetrickém, kladná hodnota o pravostranné asymetričnosti a záporná o levostranné.
+
+<<>>=
+skewness(Praha);
+skewness(Vysocina);
+skewness(PardubickyKr);
+@
+
+\subsubsection*{Špičatost}
+Špičatost udává, jak se v rozložení četností vyskytují velmi vysoké a velmi nízké hodnoty. I tuto míru lze udat pomocí koeficientu, na základě jehož výsledku lze usuzovat na více špičaté než normální rozdělení (tzv. leptokurtické) či méně špičaté než normální rozdělení (tzv. platykurtické).\\[0.5\baselineskip]
+Podobně jako u koeficientu šikmosti, i zde zjišťujeme odlišnost od normálního rozdělení. Odchylky značí, že rozdělení je špičatější (kladný koeficient) nebo plošší (záporný koeficient).
+<<>>=
+kurtosis(Praha);
+kurtosis(Vysocina);
+kurtosis(PardubickyKr);
+@
+
+\newpage
+
+\section*{Grafy}
+V následující části se podíváme na zákaldní grafy dat a jednoduše si popíšeme, co nám zobrazují.
+
+\subsection*{Historogram}
+Histogram je grafické znázornění distribuce dat pomocí sloupcového grafu se sloupci stejné šířky, vyjadřující šířku intervalů (tříd), přičemž výška sloupců vyjadřuje četnost sledované veličiny v daném intervalu.
+
+\subsubsection*{Praha}
+<<hish_pha, fig=TRUE, echo=false , height=4, width=5>>=
+his_pha <- hist(Praha,ylim=c(0,35), main="Histogram četností ceny v Praze", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+text(his_pha$mids,his_pha$counts,labels=his_pha$counts, adj=c(0.5, -0.5));
+@
+
+\begin{quote}
+\emph{Díky tomuto jednoduchému historogramu si můžem povšimnout, že sledovaná data v Praze vykazují mírně pravostrannou asymetricitu.}
+\emph{Taktéž špičatost zde není nijak významná a data jsou spíše plošší.}
+\end{quote}
+
+
+\subsubsection*{kraj Vysočina}
+<<hish_vys, fig=TRUE, echo=false , results=hide>>=
+his_vys <- hist(Vysocina,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+text(his_vys$mids,his_vys$counts,labels=his_vys$counts, adj=c(0.5, -0.5));
+@
+
+\subsubsection*{Pardubický kraj}
+<<hish_pce, fig=TRUE, echo=false , results=hide>>=
+his_pce <- hist(PardubickyKr,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+text(his_pce$mids,his_pce$counts,labels=his_pce$counts, adj=c(0.5, -0.5));
+@
+
+
+
+
+
+
+\end{document}

@@ -1,0 +1,1 @@
+NSTAT_semestralka

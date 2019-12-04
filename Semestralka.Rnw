@@ -1,10 +1,12 @@
-\documentclass[a4paper, 11pt]{book}
+\documentclass[a4paper, 12pt]{book}
 \usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{a4wide}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
 
-<<echo=false , results=hide>>=
+<<echo=false, results=hide>>=
 library('readxl');
 library('e1071');
 @
@@ -163,10 +165,12 @@ V následující části se podíváme na zákaldní grafy dat a jednoduše si p
 Histogram je grafické znázornění distribuce dat pomocí sloupcového grafu se sloupci stejné šířky, vyjadřující šířku intervalů (tříd), přičemž výška sloupců vyjadřuje četnost sledované veličiny v daném intervalu.
 
 \subsubsection*{Praha}
+\begin{center}
 <<hish_pha, fig=TRUE, echo=false , height=4, width=5>>=
 his_pha <- hist(Praha,ylim=c(0,35), main="Histogram četností ceny v Praze", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_pha$mids,his_pha$counts,labels=his_pha$counts, adj=c(0.5, -0.5));
 @
+\end{center}
 
 \begin{quote}
 \emph{Díky tomuto jednoduchému historogramu si můžem povšimnout, že sledovaná data v Praze vykazují mírně pravostrannou asymetricitu.}
@@ -174,21 +178,20 @@ text(his_pha$mids,his_pha$counts,labels=his_pha$counts, adj=c(0.5, -0.5));
 \end{quote}
 
 
-\subsubsection*{kraj Vysočina}
-<<hish_vys, fig=TRUE, echo=false , results=hide>>=
+\subsubsection*{Kraj Vysočina}
+\begin{center}
+<<hish_vys, fig=TRUE, echo=false , height=4, width=5>>=
 his_vys <- hist(Vysocina,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_vys$mids,his_vys$counts,labels=his_vys$counts, adj=c(0.5, -0.5));
 @
+\end{center}
 
 \subsubsection*{Pardubický kraj}
-<<hish_pce, fig=TRUE, echo=false , results=hide>>=
+\begin{center}
+<<hish_pce, fig=TRUE, echo=false , height=4, width=5>>=
 his_pce <- hist(PardubickyKr,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_pce$mids,his_pce$counts,labels=his_pce$counts, adj=c(0.5, -0.5));
 @
-
-
-
-
-
+\end{center}
 
 \end{document}

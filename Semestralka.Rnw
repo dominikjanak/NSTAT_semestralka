@@ -9,6 +9,7 @@
 <<echo=false, results=hide>>=
 library('readxl');
 library('e1071');
+library('aplpack');
 @
 
 %==========================================================================================
@@ -167,13 +168,13 @@ Histogram je grafické znázornění distribuce dat pomocí sloupcového grafu s
 \subsubsection*{Praha}
 \begin{center}
 <<hish_pha, fig=TRUE, echo=false , height=4, width=5>>=
-his_pha <- hist(Praha,ylim=c(0,35), main="Histogram četností ceny v Praze", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+his_pha <- hist(Praha,ylim=c(0,35), main="Histogram cen v Praze", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_pha$mids,his_pha$counts,labels=his_pha$counts, adj=c(0.5, -0.5));
 @
 \end{center}
 
 \begin{quote}
-\emph{Díky tomuto jednoduchému historogramu si můžem povšimnout, že sledovaná data v Praze vykazují mírně pravostrannou asymetricitu.}
+\emph{Díky tomuto jednoduchému historogramu si můžem povšimnout, že sledovaná data v Praze vykazují mírně pravostrannou asymetricitu.}\\[0.5\baselineskip]
 \emph{Taktéž špičatost zde není nijak významná a data jsou spíše plošší.}
 \end{quote}
 
@@ -181,17 +182,93 @@ text(his_pha$mids,his_pha$counts,labels=his_pha$counts, adj=c(0.5, -0.5));
 \subsubsection*{Kraj Vysočina}
 \begin{center}
 <<hish_vys, fig=TRUE, echo=false , height=4, width=5>>=
-his_vys <- hist(Vysocina,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+his_vys <- hist(Vysocina,ylim=c(0,40), main="Histogram cen na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_vys$mids,his_vys$counts,labels=his_vys$counts, adj=c(0.5, -0.5));
 @
 \end{center}
 
+\begin{quote}
+\emph{Koeficient šikmosti u tohoto grafu je velice blízký nule. Jak je z grafu patrné, je to způsobeno relativní rovnoměrností dat v grafu s výskytem dvou lokálních extrémů.}\\[0.5\baselineskip]
+\emph{U špičatosti je výsledný koeficient velice zajímavý. Ačkoliv se v grafu vyskytují dvě s vyššími hodnotami, musíme špičatost analyzovat na celém rozsahu grafu. Z toho lze snadno usoudit, že špičatost grafu je plošší.}
+\end{quote}
+
 \subsubsection*{Pardubický kraj}
 \begin{center}
 <<hish_pce, fig=TRUE, echo=false , height=4, width=5>>=
-his_pce <- hist(PardubickyKr,ylim=c(0,35), main="Histogram četností ceny na Vysočině", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
+his_pce <- hist(PardubickyKr,ylim=c(0,35), main="Histogram cen v Pardubickém kraji", xlab="Cena [Kč/kg]", ylab="Četnost",col = "red", border="black");
 text(his_pce$mids,his_pce$counts,labels=his_pce$counts, adj=c(0.5, -0.5));
 @
 \end{center}
+
+\begin{quote}
+\emph{Šikmost grafu je mírně levostranná. }\\[0.5\baselineskip]
+\emph{Špičatost je plochá.}
+\end{quote}
+
+\newpage
+
+\subsection*{Krabicový graf}
+V popisné statistice je krabicový graf jeden ze způsobů grafické vizualizace numerických dat pomocí jejich kvartilů. Střední ``krabicová'' část diagramu je shora ohraničena 3. kvartilem, zespodu 1. kvartilem a mezi nimi se nachází linie vymezující medián. Boxploty mohou obsahovat také linie vycházející ze střední části diagramu kolmo nahoru a dolů, tzv. vousy, vyjadřující variabilitu dat pod prvním a nad třetím kvartilem. Odlehlé hodnoty, tzv. outliery, pak mohou být vykresleny jako jednotlivé body.\\[0.5\baselineskip]
+Vousy však mohou reprezentovat několik různých hodnot, mezi nimi např. nejnižší údaj 1,5 IQR spodního kvartilu a nejvyšší údaj 1,5 IQR horního kvartilu, nebo jedna standardní odchylka nad a pod střední hodnotou dat.
+
+
+\begin{center}
+<<Grafy, fig=true, height=5>>=
+boxplot(data[,c(1,5,10)],data=mtcars, 
+        main="Krabicový graf ceny hovězího masa", xlab="Kraj", 
+        ylab="Cena za kg", col = "red", at = c(1,3,2));
+@
+\end{center}
+
+\begin{quote}
+\emph{Krabicový graf zobrazuje data pro Prahu, kraj vysočina a pardubický kraj. Snadno tak můžeme porovnat ceny hovězího masa za sledované obdbí. Fousy zobrazují minimální a maximální hodnotu.}
+\end{quote}
+\newpage
+
+\subsection*{qqPlot}
+Q-Q plot porovnává teoretické kvantily normovaného rozdělení s empirickými kvantily určených z dat. Umožňuje tím graficky posoudit, zda data pocházejí z nějakého známého rozložení. \\[0.5\baselineskip]
+V tomto případě dochází k porovnávání dat dvou různých čsových řad, čímž můžeme zjistit, zda porovnávaná data pochází ze stejného rozdělení. 
+
+\begin{center}
+<<GrafyQQ_1, fig=true>>=
+qqplot(PardubickyKr, Vysocina, 
+       main="Q-Q diagram pro porovnání dat z rozdělení")
+@
+\end{center}
+
+\begin{quote}
+\emph{Nemusíme provádět normalizaci (transformaci) dat, neboť porovnáváme dvě stejné veličiny (ceny). Na datech je patrné, ačkoliv mají určité drobné výkyvy, že pochází ze stejného rozdělení. Tímto rozdělením však nebude normální rozdělení, nicméně to z tohoto grafu nevyčteme.}
+\end{quote}
+
+\newpage
+
+\section*{Dvourozměrný výběr}
+Dvourozměrný výběr zkoumá statistické závislosti v datech. Velmi často se zkoumá závislost pro dvě proměnné. Používané metody jsou zaměřeny buď na vzájemnou závislost (souvislost) nebo na jednostrannou závislost.
+
+
+\subsection*{Kovariance}
+Kovariance je statistická charakteristika, která určuje vzájemnou závislost dvou veličin. Je definována jako střední hodnota součinu odchylek veličin od jejich středních hodnot.\\[0.5\baselineskip]
+Kovariance může nabývat hodnot na intervalu <-\infty,+\infty>. Na základě vypočtené kovariance můžeme posoudit vzájemnou závislost následujícím způsobem:
+
+\begin{description}
+  \item[cov(x,y) > 0] veličiny X a Y se pohybují stejným směrem (současně rostou nebo klesají)
+  \item[cov(x,y) = 0] veličiny X a Y jsou navzájem nezávislé
+  \item[cov(x,y) < 0] mezi veličinami X a Y je inverzní vztah (jedna roste a druhá klesá a naopak)
+\end{description}
+
+
+<<>>=
+cov(Praha, Vysocina);
+cov(Praha, PardubickyKr);
+cov(Vysocina, PardubickyKr);
+@
+
+
+\begin{quote}
+\emph{Při vzájemném porovnání všech krajů velmi snadno zjistíme, že data jsou vzájemně opravdu silně závislá.}
+\end{quote}
+
+\subsection*{Korelace}
+
 
 \end{document}

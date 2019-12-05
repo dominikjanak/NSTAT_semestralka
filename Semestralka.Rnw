@@ -2,6 +2,7 @@
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{a4wide}
+\usepackage[dvipsnames]{xcolor}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
@@ -294,7 +295,7 @@ Korelaci lze spočítat prostřednictvím funkce $cor(x, y)$, popřípadě lze p
   \[ \scalebox{1.3}{$cor(x,y)=\frac{cov(x, y)}{\sqrt{var(x)\cdot var(y)}}$} \]
 \end{center}
 
-Pří použití vzorce získáme data:
+Při použití vzorce získáme data:
 <<>>=
 cov(Pha_mtx, Vys_mtx) / (sqrt(var(Pha_mtx) * var(Vys_mtx)));
 @
@@ -323,8 +324,118 @@ plot.ecdf(PardubickyKr, xlab="Cena Kč/kg", ylab="Kumulativní četnost",
 \end{center}
 
 
+\subsection*{Testování hypotéz}
+Testování hypotéz umožňuje posoudit, zda data vyhovují předpokladu, který jsme učinili. Můžeme například posuzovat, zda platí předpoklad, že určitý lék je účinnější než jiný; nebo například, zda platí, že úroveň matematických dovedností žáků 9. tříd je nezávislá na pohlaví a na regionu. 
+\subsubsection*{Statistická hypotéza}
+Jako statistickou hypotézu chápeme určitý předpoklad o rozdělení náhodných veličin.
+\subsubsection*{Statistický test}
+Při testování statistických hypotéz se vždy porovnávají dvě hypotézy. První hypotéza, nulová, je hypotéza, která se testuje; značí se obvykle $H_{0}$. Druhou hypotézou je alternativní hypotéza, obvykle značená $H_{1}$.
+
+\subsubsection*{Testování hypotézy o cennách}
+Na samotný začátek musíme vyslovih hypotézu, neboli náš předpoklad, který chceme testovat.
+\begin{center}
+\texttt{\emph{Průměrné spotřebitelské ceny hovězího masa v Praze (x) jsou vyšší než na Vysočině (y).}}
+\end{center} 
+
+\noindent Dále formulujeme hypotézy $H_{0}$ a $H_{1}$:
+
+\begin{center}
+$H_{0}:~~\bar{x}\leq\bar{y}$
+
+$H_{1}:~~\bar{x}> \bar{y}$
+\end{center}
+
+\noindent Zvolíme testové kritérium (vzorec), který bude použit při výpočtu:
+
+\begin{center}
+\texttt{\emph{t.test - studentovo rozdělení}}
+\end{center} 
+
+\noindent A na samotný závěr provedeme výpočet testu:
+
+<<>>=
+pocet <- 144
+pPraha <- mean(Praha)
+pVysocina <- mean(Vysocina)
+T <-
+  ((pPraha - pVysocina - 0) / 
+     sqrt((pocet - 1) * var(Praha) + (pocet - 1) * var(Vysocina))
+   ) * (
+     sqrt(((pocet * pocet) * (pocet + pocet - 2)) / (pocet + pocet))
+  );
+@
+
+<<echo=false , results=hide>>=
+T <- round(T, digits = 4);
+t_0975 <- 1.960;
+TT <- t.test(Praha, Vysocina);
+@
+
+\begin{center}
+$T = \Sexpr{T}$
+\end{center}
+
+\noindent Máme vypočítanou hodnotu $ttestu$, která vyšla \texttt{$\Sexpr{T}$}. Nyní v tabulkách vyhledáme kritickou hodnotu pro \texttt{$\Sexpr{pocet+pocet-2}$} stupňů volnosti s maximální přípustnou chybou \texttt{5\%}.
+
+\begin{center}
+$t_{0.975} = \Sexpr{t_0975}$
+\end{center}
+
+\noindent V předposledním kroku vytvoříme interval, jehož pomocí rozhodneme, zda zamítneme hypotézu $H_{0}$, či nikoliv.
+
+\begin{center}
+$W = (-\infty; -\Sexpr{t_0975}) \cup (\Sexpr{t_0975};\infty)$
+\end{center}
+
+\noindent Je zjevné, že $T \in W$.
+
+\begin{center}
+\texttt{Zamítáme hypotézu $H_{0}$!}
+\\[0.75\baselineskip]
+\texttt{ {\Large \textcolor{red}{Nic však nepotvrzujeme!}}}
+\end{center}
+
+\newpage
 
 
+\subsubsection*{Testování hypotézy o cennách pomocí funkce t.test}
+Tentokrát k celému výpočtu použijeme funkci \texttt{t.test(x,y)}, která celý výpočet provede zcela automaticky a za nás. Jen si musíme dám pozor na výstupní data. Budeme vycházet z předchozího příkladu a použijeme již definované hypotézy:
+
+\begin{center}
+$H_{0}:~~\bar{x}\leq\bar{y}$
+
+$H_{1}:~~\bar{x}> \bar{y}$
+\end{center}
+
+\noindent A provedeme výpočet:
+
+<<>>=
+  t.test(Praha, Vysocina);
+@
+
+\begin{quote}
+\emph{Jakožto důležitý výstup tohoto testu považujeme hodnotu \texttt{p-value}, která nabývá hodnoty $\Sexpr{round(TT$p.value, digits = 6)}$ a udává nám pravděpodobnost zamítnutí alternativní hypotézy $H_{1}$. V tomto případě je pravděpodobnost zamítnutí $H_{1} \approx \Sexpr{round(TT$p.value*100, digits = 2)}$\%}.
+\end{quote}
+
+\begin{center}
+\texttt{A tedy zamítáme hypotézu $H_{0}$!}
+\\[0.75\baselineskip]
+\texttt{ {\Large \textcolor{red}{Opět nic nepotvrzujeme!}}}
+\end{center}
+
+\newpage
+
+\section*{Analýza rozptylu - Anova}
+Analýza rozptylu umožňuje ověřit, zda na hodnotu náhodné veličiny pro určitého jedince má statisticky významný vliv hodnota některého znaku, který se u jedince dá pozorovat. Tento znak musí nabývat jen konečného počtu možných hodnot (nejméně dvou) a slouží k rozdělení jedinců do vzájemně porovnávaných skupin.
+
+<<echo=false , results=hide>>=
+data_aov <- readxl::read_excel("aov.data.xls", col_names = TRUE);
+aov_out <- aov(Cena ~ Rok * Tyden * Kraj, data_aov);
+@
+
+<<aov_data>>=
+aov(Cena ~ Rok * Tyden * Kraj, data_aov);
+@
 
 
 

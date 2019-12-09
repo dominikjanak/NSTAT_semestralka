@@ -14,6 +14,7 @@ library('readxl');
 library('e1071');
 library('aplpack');
 library('xtable');
+library('utf8');
 @
 
 %==========================================================================================
@@ -26,7 +27,7 @@ library('xtable');
   	\parbox[b]{0.75\textwidth}{ 
   		{\Huge\bfseries Seminární práce \\[0.5\baselineskip]z předmětu NSTAT}\\[2\baselineskip]
   		{\large\textit{Analýza průměrné spotřebitelské ceny\\hovězího masa (zadního bez kosti)}}\\[4\baselineskip]
-  		{\Large\textsc{Dominik Janák}}
+  		{\Large\textsc{Bc. Dominik Janák}}
   		
   		\vspace{0.5\textheight}
   		
@@ -39,6 +40,7 @@ library('xtable');
 %========================================================================================== 
 
 <<echo=false , results=hide>>=
+options(encoding = "UTF-8");
 data <- readxl::read_excel("data.xls", col_names = TRUE);
 Praha <- data$Praha;
 Vysocina <- data$Vysočina;
@@ -109,7 +111,7 @@ Kvantiliy a percentily rozdělují soubor zkoumaných hodnot dané promméné:
   \item percentil - na sto částí.
 \end{itemize}
 
-Prostřednictvím tohoto rozdělení je možné se rychle rozientovat ve velkém souboru a~popsat jeho vnitřní strukturu. Díky tomu můžeme zjistit, zda v rámci souboru existují extrémy, nebo zda je soubor víceméně homogení.
+\noindent Prostřednictvím tohoto rozdělení je možné se rychle rozientovat ve velkém souboru a~popsat jeho vnitřní strukturu. Díky tomu můžeme zjistit, zda v rámci souboru existují extrémy, nebo zda je soubor víceméně homogení.
 
 << echo=false, results=tex >>=
 
@@ -194,8 +196,10 @@ text(his_pce$mids,his_pce$counts,labels=his_pce$counts, adj=c(0.5, -0.5));
 \includegraphics[width=0.8\textwidth]{Semestralka-hish_pha}
 \end{center}
 
+\begin{quote}
 \emph{Díky tomuto jednoduchému historogramu si můžem povšimnout, že sledovaná data v Praze vykazují mírně pravostrannou asymetricitu.\\[0.5\baselineskip]
 Taktéž špičatost zde není nijak významná a data jsou spíše plošší.}
+\end{quote}
 
 \subsubsection*{Kraj Vysočina a Pardubický kraj}
 
@@ -203,6 +207,7 @@ Taktéž špičatost zde není nijak významná a data jsou spíše plošší.}
 \includegraphics[width=0.49\textwidth]{Semestralka-hish_pce}
 
 
+\begin{quote}
 \subsubsection*{Vysočina}
 \emph{Koeficient šikmosti u tohoto grafu je velice blízký nule. Jak je z grafu patrné, je to způsobeno relativní rovnoměrností dat v grafu s výskytem dvou lokálních extrémů.\\[0.5\baselineskip]
 U špičatosti je výsledný koeficient velice zajímavý. Ačkoliv se v grafu vyskytují dvě místa s~vyššími hodnotami, musíme špičatost analyzovat na celém rozsahu grafu. Z toho lze snadno usoudit, že špičatost grafu je plošší.}
@@ -210,6 +215,7 @@ U špičatosti je výsledný koeficient velice zajímavý. Ačkoliv se v grafu v
 \subsubsection*{Pardubický kraj}
 \emph{Šikmost grafu je mírně levostranná.\\[0.5\baselineskip]
 Špičatost je plochá.}
+\end{quote}
 
 \newpage
 
@@ -221,12 +227,12 @@ Krabicový graf symbolizuje způsob grafické vizualizace numerických dat pomoc
 <<Grafy_Boxplot, fig=true, height=5>>=
 boxplot(data[,c(1,5,10)], 
         main="Krabicový graf ceny hovězího masa", xlab="Kraj", 
-        ylab="Cena za kg", col = "red", at = c(1,3,2));
+        ylab="Cena [Kč/kg]", col = "red", at = c(1,3,2));
 @
 \end{center}
 
 \begin{quote}
-\emph{Krabicový graf zobrazuje data pro Prahu, kraj vysočina a pardubický kraj. Snadno tak můžeme porovnat ceny hovězího masa za sledované obdbí. Fousy zobrazují minimální a maximální cenu za sledované období. Cena hovězího masa v pardubickém kraji není tak dobrá jako cena na Vysočině. Ovšem sledovaný horizont je dlouhý a je třeba si dát na data pozor.}
+\emph{Krabicový graf zobrazuje data pro Prahu, kraj vysočina a pardubický kraj. Snadno tak můžeme porovnat ceny hovězího masa za sledované obdbí. Fousy zobrazují minimální a maximální cenu za sledované období.\\[0.5\baselineskip] Cena hovězího masa v Pardubickém kraji není tak dobrá, jako cena na Vysočině. Ovšem sledovaný horizont je dlouhý a je třeba si dát na data pozor.}
 \end{quote}
 \newpage
 
@@ -237,7 +243,8 @@ V tomto případě dochází k porovnávání dat dvou různých čsových řad,
 \begin{center}
 <<GrafyQQ, fig=true>>=
 qqplot(PardubickyKr, Vysocina, 
-       main="Q-Q diagram pro porovnání dat z rozdělení")
+       main="Q-Q diagram pro porovnání dat z rozdělení", col="red",
+       ylab="Vysočina", xlab="Pardubický kraj")
 @
 \end{center}
 
@@ -248,7 +255,7 @@ qqplot(PardubickyKr, Vysocina,
 \newpage
 \subsection*{Chernoffův Obličejový graf}
 
-Obličejové grafy slouží k zobrazení vícerozměrných dat. K tomu využívají schopnost člověka rozpoznávat a hodnotit rozdíly mezi lidskými tvářemi. Každý objekt je reprezentován schematickým obličejem, ve kterém tvar či velikost jednotlivých rysů (délka nosu, tvar úst, sklon obočí, šířka tváře) představují hodnotu odpovídajícího atributu. Původní Chernoffův návrh mohl zobrazit až 18 atributů.\\[-1\baselineskip]
+Obličejové grafy slouží k zobrazení vícerozměrných dat. K tomu využívají schopnost člověka rozpoznávat a hodnotit rozdíly mezi lidskými tvářemi. Každý jeden objekt je reprezentován\\* schematickým obličejem, ve kterém tvar či velikost jednotlivých rysů (délka nosu, tvar úst, sklon obočí, šířka tváře) představují hodnotu odpovídajícího atributu. Původní Chernoffův návrh mohl zobrazit až 18 atributů.\\[-1\baselineskip]
 \begin{center}
 <<Grafy_Chernoff, fig=true, results=hide>>=
 faces(t(data[, c(1,6,10,5)]), main="Chernoffův Obličejový graf");
@@ -261,7 +268,7 @@ faces(t(data[, c(1,6,10,5)]), main="Chernoffův Obličejový graf");
 \newpage
 
 \section*{Dvourozměrný výběr}
-Dvourozměrný výběr zkoumá statistické závislosti v datech. Velmi často se zkoumá závislost pro dvě proměnné. Používané metody jsou zaměřeny buď na vzájemnou závislost (souvislost).
+Výběr zkoumá statistické závislosti v datech. Velmi často se zkoumá závislost pro dvě proměnné. Používané metody jsou zaměřeny na vzájemnou závislost (souvislost).
 
 
 \subsection*{Kovariance}
@@ -298,9 +305,9 @@ print(xtable(df), include.rownames=FALSE);
 Cílem korelační analýzy je určit sílu lineární závislosti mezi dvěmi veličinami. Výhodnocení dat je možné provést například dle následujících intervalů:
 \begin{itemize}
   \setlength\itemsep{0em}
-  \item \textbf{$(-0,3 ; 0,3)$} - nezávislost - NEKORELOVANOST
-  \item $\langle-1 ; -0,8) \cup (0,8; 1\rangle$ - závislost - KORELOVANOST
-  \item $\langle-0,8 ; -0,3) \cup (0,3; 0,8\rangle$ - o datech nemůžeme s jistotou rozhodnout
+  \item \textbf{$(-0.3 ; 0.3)$} - nezávislost - NEKORELOVANOST
+  \item $\langle-1 ; -0.8) \cup (0.8; 1\rangle$ - závislost - KORELOVANOST
+  \item $\langle-0.8 ; -0.3) \cup (0.3; 0.8\rangle$ - o datech nemůžeme s jistotou rozhodnout
 \end{itemize}
 
 <<echo=false , results=hide>>=
@@ -308,36 +315,36 @@ Pha_mtx <- data[, c(1)];
 Vys_mtx <- data[, c(5)];
 @
 
-Korelaci lze spočítat prostřednictvím funkce $cor(x, y)$, popřípadě lze použít vzorec používající rozptyl a kovarianci:
+\noindent Korelaci lze spočítat prostřednictvím funkce $cor(x, y)$, popřípadě lze použít vzorec používající rozptyl a kovarianci:
 \\[-1.45\baselineskip]\begin{center}
   \[ \scalebox{1.3}{$cor(x,y)=\frac{cov(x, y)}{\sqrt{var(x)\cdot var(y)}}$} \]
 \end{center}
 
 \newpage
-\noindent Při použití vzorce získáme data:
-
+\noindent Při použití vzorce získáme hodnotu:\\
 $\Sexpr{ round(cov(Pha_mtx, Vys_mtx) / (sqrt(var(Pha_mtx) * var(Vys_mtx))), digits = 3)}$
-
+\\[0.5\baselineskip]
 \noindent Dále si necháme vygenerovat korelační matici:
 
 <<echo=FALSE>>=
 cor(data[,c(1,5,10)]);
 @
 
-\noindent V matici vidíme, že korelační koeficieent je stejný jako u výše použitého vrozce.
+\noindent V matici vidíme, že korelační koeficieent je stejný jako u výše použitého vzorce.
 
 \begin{quote}
 \emph{Při pohledu na korelační matici snadno dojdeme k závěru, že jsou na sobě všechny kraje celkem silně závislé. můžeme tím tedy říci, že jsou KORELOVANÉ.}
 \end{quote}
 
 \subsection*{Empirická komulativní distribuční funkce}
-Distribuční funkce nebo lidově „kumulovaná pravděpodobnost“ je funkce, která udává pravděpodobnost, že hodnota náhodné proměnné je menší než zadaná hodnota.
+Distribuční funkce, též „kumulovaná pravděpodobnost“, která udává pravděpodobnost, že hodnota náhodné proměnné je menší než zadaná hodnota.
 Empirická distribuční funkce však slouží jako odhad skutečné distribuční funkce náhodné veličiny. 
 
 \begin{center}
 <<Grafy_distribucni_funkce_pce, fig=true, results=hide, width=6, height=4>>=
 plot.ecdf(PardubickyKr, xlab="Cena Kč/kg", ylab="Kumulativní četnost",
-          main="ECDF pro ceny hovězího masa v Prardubickém kraji", col="red");
+          main="ECDF pro ceny hovězího masa v Prardubickém kraji", 
+          col="red");
 @
 \end{center}
 
@@ -397,7 +404,7 @@ $T = \Sexpr{T}$
 $t_{0.975} = \Sexpr{t_0975}$
 \end{center}
 
-\noindent V předposledním kroku vytvoříme interval, jehož pomocí rozhodneme, zda zamítneme hypotézu $H_{0}$, či nikoliv. A jelikož používáme pouze jednostranné testové kritérium, volíme pouze horní část intervalu.
+\noindent V předposledním kroku vytvoříme interval $W$, jehož pomocí rozhodneme, zda zamítneme hypotézu $H_{0}$, či nikoliv. A jelikož používáme pouze jednostranné testové kritérium, volíme pouze horní část intervalu.
 
 \begin{center}
 $W = (\Sexpr{t_0975};\infty)$
@@ -417,7 +424,7 @@ $W = (\Sexpr{t_0975};\infty)$
 
 
 \subsubsection*{Testování hypotézy o cennách pomocí funkce t.test}
-Tentokrát k celému výpočtu použijeme funkci \texttt{t.test(x,y)}, která celý výpočet provede zcela automaticky a za nás. Jen si musíme dám pozor na výstupní data. Budeme vycházet z~předchozího příkladu a použijeme již definované hypotézy:
+Tentokrát k celému výpočtu použijeme funkci \texttt{t.test(x,y)}, která celý výpočet provede zcela automaticky a za nás. Jen si musíme dám pozor na výstupní data. Budeme vycházet z~předchozího příkladu a použijeme již definovaou hypotézu:
 
 \begin{center}
 \texttt{\emph{Průměrné spotřebitelské ceny hovězího masa v Praze (x) jsou nižšší nebo rovny cenám na Vysočině (y).}}
@@ -459,7 +466,7 @@ aov_p_value <- summary(aov_out)[[1]][["Pr(>F)"]];
 summary(aov(Cena ~ Rok * Tyden * Kraj, data_aov))
 @
 
-\noindent Zhodnocený výsledků Analýzy rozptylu:
+\noindent Zhodnocený výsledků anmjalýzy rozptylu:
 
 \begin{description}
   \setlength\itemsep{0em}
@@ -482,12 +489,12 @@ Lineární regrese slouží k proložení souboru bodů v grafu přímkou. Při 
 
 <<tesdv, fig=true, results=hide>>=
 plot(Vysocina,Praha)
-regrese <- lm(Vysocina~Praha)
+regrese <- lm(Praha~Vysocina)
 abline(regrese$coefficients[[1]], regrese$coefficients[[2]], col="red")
 @
 
 \begin{quote}
-\emph{Regrese nám pomáha předpovídat trendy růstu a poklesu v budoucnosti. Dle následující regresní přímky je patrné, že cena hovězího masa bude i nadále růst.}
+\emph{Regrese nám pomáha předpovídat trendy růstu a poklesu v budoucnosti. Dle rekresní přímky je naprosto patrné, že pokud poroste cena hovězího masa na Vysočině, tak s velkou pravděpodobností poroste i cena v Praze a naoak.}
 \end{quote}
 
 
